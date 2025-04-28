@@ -43,12 +43,14 @@
             background-color: #e6c88c;
             position: relative;
             margin: 0 auto;
+            overflow: hidden;
         }
         .point {
             position: absolute;
-            width: 24px;
+            width: 40px;
             height: 160px;
             background-color: transparent;
+            z-index: 2;
         }
         .checker {
             position: absolute;
@@ -130,8 +132,8 @@
         }
         .bar {
             position: absolute;
-            left: 290px;
-            width: 20px;
+            left: 280px;
+            width: 40px;
             height: 400px;
             background-color: #8b4513;
             z-index: 1;
@@ -172,6 +174,16 @@
             text-align: center;
             z-index: 100;
             display: none;
+        }
+        .point-area {
+            position: absolute;
+            width: 40px;
+            height: 160px;
+            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+            z-index: 1;
+        }
+        .point-area.bottom {
+            clip-path: polygon(0% 100%, 100% 100%, 50% 0%);
         }
     </style>
 </head>
@@ -240,32 +252,35 @@
             // Create points (24 points in backgammon)
             for (let i = 0; i < 24; i++) {
                 const pointNum = i + 1;
+                
+                // Create point area (visual triangle)
+                const pointArea = document.createElement('div');
+                pointArea.className = `point-area ${pointNum <= 12 ? '' : 'bottom'}`;
+                pointArea.style.backgroundColor = Math.floor(i / 6) % 2 === 0 ? '#8b4513' : '#f5deb3';
+                
+                // Position points (standard backgammon layout)
+                const isTop = pointNum <= 12;
+                const col = (pointNum <= 12) ? (12 - pointNum) : (pointNum - 13);
+                const left = 20 + col * 90;
+                const top = isTop ? 20 : 220;
+                
+                pointArea.style.left = left + 'px';
+                pointArea.style.top = top + 'px';
+                board.appendChild(pointArea);
+                
+                // Create point container (for checkers)
                 const point = document.createElement('div');
                 point.className = 'point';
                 point.id = 'point-' + pointNum;
                 point.dataset.pointNumber = pointNum;
-                
-                // Position points (standard backgammon layout)
-                const isTop = pointNum <= 12;
-                const col = (pointNum <= 12) ? 
-                    (12 - pointNum) : (pointNum - 13);
-                const left = 50 + col * 90;
-                const top = isTop ? 20 : 220;
-                
                 point.style.left = left + 'px';
                 point.style.top = top + 'px';
-                
-                // Add triangle shape using CSS
-                point.style.clipPath = isTop 
-                    ? 'polygon(0% 0%, 100% 0%, 50% 100%)'
-                    : 'polygon(0% 100%, 100% 100%, 50% 0%)';
-                point.style.backgroundColor = col % 2 === 0 ? '#8b4513' : '#f5deb3';
                 
                 // Add point number
                 const number = document.createElement('div');
                 number.className = 'point-number';
                 number.textContent = pointNum;
-                number.style.left = (left - 10) + 'px';
+                number.style.left = (left + 10) + 'px';
                 number.style.top = isTop ? '180px' : '0px';
                 board.appendChild(number);
                 
@@ -328,8 +343,8 @@
                         checker.dataset.position = j;
                         
                         // Position checkers on the point
-                        const left = parseInt(point.style.left) + 2;
-                        const top = parseInt(point.style.top) + (isTop ? j * 10 : -j * 10);
+                        const left = parseInt(point.style.left) + 10;
+                        const top = parseInt(point.style.top) + (isTop ? j * 15 : -j * 15);
                         
                         checker.style.left = left + 'px';
                         checker.style.top = top + 'px';
