@@ -128,6 +128,12 @@
             height: 400px;
             background-color: #8b4513;
         }
+        .point-number {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -186,16 +192,16 @@
             
             // Create points (24 points in backgammon)
             for (let i = 0; i < 24; i++) {
+                const pointNum = i + 1;
                 const point = document.createElement('div');
                 point.className = 'point';
-                point.id = 'point-' + (i+1);
+                point.id = 'point-' + pointNum;
                 
-                // Position points alternately on top and bottom
-                const isTop = i < 12;
-                const row = Math.floor(i / 6);
-                const col = i % 6;
-                
-                const left = i < 12 ? 50 + col * 90 : 50 + (5 - col) * 90;
+                // Position points (standard backgammon layout)
+                const isTop = pointNum <= 12;
+                const col = (pointNum <= 12) ? 
+                    (12 - pointNum) : (pointNum - 13);
+                const left = 50 + col * 90;
                 const top = isTop ? 20 : 220;
                 
                 point.style.left = left + 'px';
@@ -205,7 +211,15 @@
                 point.style.clipPath = isTop 
                     ? 'polygon(0% 0%, 100% 0%, 50% 100%)'
                     : 'polygon(0% 100%, 100% 100%, 50% 0%)';
-                point.style.backgroundColor = row % 2 === 0 ? '#8b4513' : '#f5deb3';
+                point.style.backgroundColor = col % 2 === 0 ? '#8b4513' : '#f5deb3';
+                
+                // Add point number
+                const number = document.createElement('div');
+                number.className = 'point-number';
+                number.textContent = pointNum;
+                number.style.left = (left - 10) + 'px';
+                number.style.top = isTop ? '180px' : '0px';
+                board.appendChild(number);
                 
                 board.appendChild(point);
             }
@@ -289,7 +303,7 @@
             const die1 = parseInt(document.getElementById('dice1-input').value);
             const die2 = parseInt(document.getElementById('dice2-input').value);
             
-            if (isNaN(die1) || isNaN(die2) {
+            if (isNaN(die1) || isNaN(die2) || die1 < 1 || die1 > 6 || die2 < 1 || die2 > 6) {
                 alert('Please enter valid dice values (1-6)');
                 return;
             }
@@ -298,7 +312,7 @@
             document.getElementById('player-turn').textContent = 
                 `${gameState.currentPlayer === 'white' ? 'White' : 'Black'}'s turn - Choose move`;
             
-            logToGame(`Player rolled ${die1}-${die2}`);
+            logToGame(`${gameState.currentPlayer === 'white' ? 'White' : 'Black'} rolled ${die1}-${die2}`);
             
             // Auto-suggest moves
             suggestBestMove();
@@ -313,15 +327,11 @@
             const [die1, die2] = gameState.dice;
             const player = gameState.currentPlayer;
             
-            // In a real implementation, this would use a backgammon AI
-            // For this demo, we'll provide sample suggestions based on position
-            
-            const suggestions = document.getElementById('move-suggestions');
-            
             // Get sample moves based on dice and player
             const bestMove = getBestMoveSample(die1, die2, player);
             const altMove = getAlternativeMoveSample(die1, die2, player);
             
+            const suggestions = document.getElementById('move-suggestions');
             suggestions.innerHTML = `
                 <h3>Suggested Moves for ${die1}-${die2}</h3>
                 <div class="move-suggestion">
@@ -346,21 +356,18 @@
         }
         
         function getBestMoveSample(die1, die2, player) {
-            // This is just sample logic - a real AI would be much more sophisticated
+            // This is simplified logic - a real AI would be more sophisticated
             const isWhite = player === 'white';
             
-            // Sample moves for different dice combinations
-            if (die1 === 6 && die2 === 6) {
-                return isWhite ? "24/18 24/18" : "1/7 1/7";
-            }
-            if (die1 === 5 && die2 === 5) {
-                return isWhite ? "13/8 13/8" : "12/17 12/17";
-            }
-            if (die1 === 4 && die2 === 4) {
-                return isWhite ? "8/4 8/4" : "17/21 17/21";
+            // Opening moves
+            if (gameState.moves.length === 0) {
+                if (die1 === 3 && die2 === 1) return isWhite ? "8/5 6/5" : "17/20 19/20";
+                if (die1 === 4 && die2 === 2) return isWhite ? "8/4 6/4" : "17/21 19/21";
+                if (die1 === 5 && die2 === 3) return isWhite ? "8/3 6/3" : "17/22 19/22";
+                if (die1 === 6 && die2 === 1) return isWhite ? "13/7 8/7" : "12/18 13/14";
             }
             
-            // For other rolls, combine the dice in different ways
+            // Standard moves
             const moves = [
                 `13/${13-die1} 6/${6-die2}`,
                 `8/${8-die1} 6/${6-die2}`,
@@ -372,14 +379,12 @@
         }
         
         function getAlternativeMoveSample(die1, die2, player) {
-            // Alternative moves that are slightly less optimal
             const isWhite = player === 'white';
             
-            if (die1 === 6 && die2 === 6) {
-                return isWhite ? "24/18 13/7" : "1/7 6/12";
-            }
-            if (die1 === 5 && die2 === 5) {
-                return isWhite ? "13/8 6/1" : "12/17 19/24";
+            // Alternative opening moves
+            if (gameState.moves.length === 0) {
+                if (die1 === 3 && die2 === 1) return isWhite ? "13/10 13/12" : "12/15 12/13";
+                if (die1 === 4 && die2 === 2) return isWhite ? "13/9 13/11" : "12/16 12/14";
             }
             
             const moves = [
@@ -393,15 +398,14 @@
         }
         
         function getMoveExplanation(move, player) {
-            // Sample explanations for different types of moves
             if (move.includes("24/")) {
-                return "Brings your back checkers into play, which is important in the early game.";
+                return "Brings your back checkers into play, important for development.";
             }
             if (move.includes("13/") || move.includes("8/")) {
                 return "Develops your position by moving builders toward your home board.";
             }
             if (move.includes("6/")) {
-                return "Strengthens your home board, making it harder for opponent to enter if hit.";
+                return "Strengthens your home board, making it harder for opponent to enter.";
             }
             return "Good standard move that balances development and safety.";
         }
@@ -410,7 +414,8 @@
             // In a real implementation, this would validate and apply the move
             // For this demo, we'll just log it and switch players
             
-            logToGame(`Player played ${move}`);
+            logToGame(`${gameState.currentPlayer === 'white' ? 'White' : 'Black'} played ${move}`);
+            gameState.moves.push(move);
             
             // Switch player
             gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
@@ -447,8 +452,7 @@
                 return;
             }
             
-            // In a real implementation, this would revert the last move
-            // For this demo, we'll just remove the last log entry
+            // Remove last move from log
             const log = document.getElementById('game-log');
             const entries = log.querySelectorAll('p');
             if (entries.length > 1) {
@@ -463,6 +467,7 @@
             } else {
                 // Otherwise switch back to previous player
                 gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                gameState.moves.pop();
             }
             
             updateBoard();
