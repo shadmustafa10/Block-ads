@@ -1,203 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Backgammon Board</title>
+    <title>Simple Backgammon Board</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
         .board {
-            width: 800px;
-            height: 500px;
+            width: 700px;
+            height: 400px;
             background-color: #e6c88c;
             position: relative;
-            display: flex;
-        }
-        .quadrant {
-            width: 50%;
-            height: 100%;
-            position: relative;
+            border: 2px solid #333;
         }
         .point {
             position: absolute;
-            width: 40px;
-            height: 200px;
+            width: 30px;
+            height: 160px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         .point.top {
-            top: 0;
             clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+            top: 0;
         }
         .point.bottom {
-            bottom: 0;
             clip-path: polygon(0% 100%, 100% 100%, 50% 0%);
+            bottom: 0;
         }
         .checker {
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            margin: 2px 0;
-            cursor: pointer;
+            margin: 1px 0;
             border: 1px solid #333;
-            box-sizing: border-box;
         }
-        .checker.white {
+        .white {
             background-color: white;
         }
-        .checker.black {
+        .black {
             background-color: black;
-        }
-        .checker.selected {
-            transform: scale(1.2);
-            box-shadow: 0 0 8px rgba(0,0,0,0.6);
         }
         .bar {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
+            width: 30px;
             height: 100%;
             background-color: #8b4513;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
         .point-number {
             position: absolute;
             font-size: 12px;
             font-weight: bold;
-            color: #333;
-        }
-        .point-number.top {
-            bottom: -20px;
-        }
-        .point-number.bottom {
-            top: -20px;
         }
     </style>
 </head>
 <body>
-    <div class="board" id="board">
-        <div class="quadrant" id="quadrant1"></div>
-        <div class="bar" id="bar"></div>
-        <div class="quadrant" id="quadrant2"></div>
+    <div class="board">
+        <!-- Right side points (top) -->
+        <div class="point top" style="left: 30px; background-color: #8b4513;">
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="point-number" style="bottom: -20px;">1</div>
+        </div>
+        <div class="point top" style="left: 90px; background-color: #f5deb3;">
+            <div class="point-number" style="bottom: -20px;">2</div>
+        </div>
+        <div class="point top" style="left: 150px; background-color: #8b4513;">
+            <div class="point-number" style="bottom: -20px;">3</div>
+        </div>
+        <div class="point top" style="left: 210px; background-color: #f5deb3;">
+            <div class="point-number" style="bottom: -20px;">4</div>
+        </div>
+        <div class="point top" style="left: 270px; background-color: #8b4513;">
+            <div class="point-number" style="bottom: -20px;">5</div>
+        </div>
+        <div class="point top" style="left: 330px; background-color: #f5deb3;">
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="point-number" style="bottom: -20px;">6</div>
+        </div>
+        
+        <!-- Right side points (bottom) -->
+        <div class="point bottom" style="left: 30px; background-color: #8b4513;">
+            <div class="point-number" style="top: -20px;">12</div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+        </div>
+        <div class="point bottom" style="left: 90px; background-color: #f5deb3;">
+            <div class="point-number" style="top: -20px;">11</div>
+        </div>
+        <div class="point bottom" style="left: 150px; background-color: #8b4513;">
+            <div class="point-number" style="top: -20px;">10</div>
+        </div>
+        <div class="point bottom" style="left: 210px; background-color: #f5deb3;">
+            <div class="point-number" style="top: -20px;">9</div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+        </div>
+        <div class="point bottom" style="left: 270px; background-color: #8b4513;">
+            <div class="point-number" style="top: -20px;">8</div>
+        </div>
+        <div class="point bottom" style="left: 330px; background-color: #f5deb3;">
+            <div class="point-number" style="top: -20px;">7</div>
+        </div>
+        
+        <!-- Left side points (top) -->
+        <div class="point top" style="right: 30px; background-color: #8b4513;">
+            <div class="point-number" style="bottom: -20px;">24</div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+        </div>
+        <div class="point top" style="right: 90px; background-color: #f5deb3;">
+            <div class="point-number" style="bottom: -20px;">23</div>
+        </div>
+        <div class="point top" style="right: 150px; background-color: #8b4513;">
+            <div class="point-number" style="bottom: -20px;">22</div>
+        </div>
+        <div class="point top" style="right: 210px; background-color: #f5deb3;">
+            <div class="point-number" style="bottom: -20px;">21</div>
+        </div>
+        <div class="point top" style="right: 270px; background-color: #8b4513;">
+            <div class="point-number" style="bottom: -20px;">20</div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+        </div>
+        <div class="point top" style="right: 330px; background-color: #f5deb3;">
+            <div class="point-number" style="bottom: -20px;">19</div>
+        </div>
+        
+        <!-- Left side points (bottom) -->
+        <div class="point bottom" style="right: 30px; background-color: #8b4513;">
+            <div class="point-number" style="top: -20px;">13</div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+            <div class="checker white"></div>
+        </div>
+        <div class="point bottom" style="right: 90px; background-color: #f5deb3;">
+            <div class="point-number" style="top: -20px;">14</div>
+        </div>
+        <div class="point bottom" style="right: 150px; background-color: #8b4513;">
+            <div class="point-number" style="top: -20px;">15</div>
+        </div>
+        <div class="point bottom" style="right: 210px; background-color: #f5deb3;">
+            <div class="point-number" style="top: -20px;">16</div>
+        </div>
+        <div class="point bottom" style="right: 270px; background-color: #8b4513;">
+            <div class="point-number" style="top: -20px;">17</div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+            <div class="checker black"></div>
+        </div>
+        <div class="point bottom" style="right: 330px; background-color: #f5deb3;">
+            <div class="point-number" style="top: -20px;">18</div>
+        </div>
+        
+        <div class="bar"></div>
     </div>
-
-    <script>
-        // Initialize the board with starting position
-        function initializeBoard() {
-            const quadrant1 = document.getElementById('quadrant1');
-            const quadrant2 = document.getElementById('quadrant2');
-            const bar = document.getElementById('bar');
-            
-            // Clear any existing points
-            quadrant1.innerHTML = '';
-            quadrant2.innerHTML = '';
-            bar.innerHTML = '';
-            
-            // Create points (24 points total)
-            const pointPositions = [
-                // Quadrant 1 (top right)
-                { number: 1, x: 0, color: '#8b4513', checkers: 2, checkerColor: 'black' },
-                { number: 2, x: 60, color: '#f5deb3', checkers: 0 },
-                { number: 3, x: 120, color: '#8b4513', checkers: 0 },
-                { number: 4, x: 180, color: '#f5deb3', checkers: 0 },
-                { number: 5, x: 240, color: '#8b4513', checkers: 0 },
-                { number: 6, x: 300, color: '#f5deb3', checkers: 5, checkerColor: 'white' },
-                { number: 7, x: 360, color: '#8b4513', checkers: 0 },
-                { number: 8, x: 420, color: '#f5deb3', checkers: 3, checkerColor: 'white' },
-                { number: 9, x: 480, color: '#8b4513', checkers: 0 },
-                { number: 10, x: 540, color: '#f5deb3', checkers: 0 },
-                { number: 11, x: 600, color: '#8b4513', checkers: 0 },
-                { number: 12, x: 660, color: '#f5deb3', checkers: 5, checkerColor: 'black' },
-                
-                // Quadrant 2 (top left)
-                { number: 13, x: 0, color: '#f5deb3', checkers: 5, checkerColor: 'white' },
-                { number: 14, x: 60, color: '#8b4513', checkers: 0 },
-                { number: 15, x: 120, color: '#f5deb3', checkers: 0 },
-                { number: 16, x: 180, color: '#8b4513', checkers: 0 },
-                { number: 17, x: 240, color: '#f5deb3', checkers: 3, checkerColor: 'black' },
-                { number: 18, x: 300, color: '#8b4513', checkers: 0 },
-                { number: 19, x: 360, color: '#f5deb3', checkers: 5, checkerColor: 'black' },
-                { number: 20, x: 420, color: '#8b4513', checkers: 0 },
-                { number: 21, x: 480, color: '#f5deb3', checkers: 0 },
-                { number: 22, x: 540, color: '#8b4513', checkers: 0 },
-                { number: 23, x: 600, color: '#f5deb3', checkers: 0 },
-                { number: 24, x: 660, color: '#8b4513', checkers: 2, checkerColor: 'white' }
-            ];
-            
-            // Create points in quadrant 1 (top right)
-            pointPositions.slice(0, 12).forEach(point => {
-                createPoint(quadrant1, point, 'top');
-            });
-            
-            // Create points in quadrant 2 (top left)
-            pointPositions.slice(12).forEach(point => {
-                createPoint(quadrant2, point, 'bottom');
-            });
-            
-            // Create bar checkers (none at start)
-            const barWhite = document.createElement('div');
-            barWhite.className = 'checker white';
-            bar.appendChild(barWhite);
-            
-            const barBlack = document.createElement('div');
-            barBlack.className = 'checker black';
-            bar.appendChild(barBlack);
-        }
-        
-        function createPoint(container, point, position) {
-            const pointElement = document.createElement('div');
-            pointElement.className = `point ${position}`;
-            pointElement.style.left = `${point.x}px`;
-            pointElement.style.backgroundColor = point.color;
-            pointElement.dataset.pointNumber = point.number;
-            
-            // Add checkers
-            if (point.checkers > 0) {
-                for (let i = 0; i < point.checkers; i++) {
-                    const checker = document.createElement('div');
-                    checker.className = `checker ${point.checkerColor}`;
-                    checker.dataset.point = point.number;
-                    checker.dataset.position = i;
-                    checker.addEventListener('click', handleCheckerClick);
-                    pointElement.appendChild(checker);
-                }
-            }
-            
-            // Add point number
-            const numberElement = document.createElement('div');
-            numberElement.className = `point-number ${position}`;
-            numberElement.textContent = point.number;
-            pointElement.appendChild(numberElement);
-            
-            container.appendChild(pointElement);
-        }
-        
-        function handleCheckerClick(event) {
-            // Clear previous selection
-            document.querySelectorAll('.checker.selected').forEach(checker => {
-                checker.classList.remove('selected');
-            });
-            
-            // Select this checker
-            event.target.classList.add('selected');
-            console.log(`Selected checker at point ${event.target.dataset.point}, position ${event.target.dataset.position}`);
-        }
-        
-        // Initialize the board when page loads
-        window.onload = initializeBoard;
-    </script>
 </body>
 </html>
