@@ -511,6 +511,10 @@
             const fromElement = fromPoint === 'bar' ? 
                 document.querySelector('.bar') : 
                 document.getElementById('point-' + fromPoint);
+            const fromRect = fromElement.getBoundingClientRect();
+            const boardRect = document.getElementById('board').getBoundingClientRect();
+            const fromX = fromRect.left + fromRect.width/2 - boardRect.left;
+            const fromY = fromRect.top + fromRect.height/2 - boardRect.top;
             
             for (const move of gameState.remainingMoves) {
                 let toPoint;
@@ -537,44 +541,35 @@
                     (toPoint === 'off' ? null : document.getElementById('point-' + toPoint));
                 
                 if (toElement) {
-                    drawArrow(fromElement, toElement);
+                    const toRect = toElement.getBoundingClientRect();
+                    const toX = toRect.left + toRect.width/2 - boardRect.left;
+                    const toY = toRect.top + toRect.height/2 - boardRect.top;
+                    
+                    // Calculate angle
+                    const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+                    
+                    // Calculate length
+                    const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
+                    
+                    // Create arrow line
+                    const line = document.createElement('div');
+                    line.className = 'arrow-line';
+                    line.style.left = fromX + 'px';
+                    line.style.top = fromY + 'px';
+                    line.style.width = length + 'px';
+                    line.style.transform = `rotate(${angle}deg)`;
+                    
+                    // Create arrow head
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.style.left = toX + 'px';
+                    arrow.style.top = toY + 'px';
+                    arrow.style.transform = `rotate(${angle - 90}deg)`;
+                    
+                    document.getElementById('board').appendChild(line);
+                    document.getElementById('board').appendChild(arrow);
                 }
             }
-        }
-        
-        function drawArrow(fromElement, toElement) {
-            const fromRect = fromElement.getBoundingClientRect();
-            const toRect = toElement.getBoundingClientRect();
-            const boardRect = document.getElementById('board').getBoundingClientRect();
-            
-            const fromX = fromRect.left + fromRect.width/2 - boardRect.left;
-            const fromY = fromRect.top + fromRect.height/2 - boardRect.top;
-            const toX = toRect.left + toRect.width/2 - boardRect.left;
-            const toY = toRect.top + toRect.height/2 - boardRect.top;
-            
-            // Calculate angle
-            const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
-            
-            // Calculate length
-            const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
-            
-            // Create arrow line
-            const line = document.createElement('div');
-            line.className = 'arrow-line';
-            line.style.left = fromX + 'px';
-            line.style.top = fromY + 'px';
-            line.style.width = length + 'px';
-            line.style.transform = `rotate(${angle}deg)`;
-            
-            // Create arrow head
-            const arrow = document.createElement('div');
-            arrow.className = 'arrow';
-            arrow.style.left = toX + 'px';
-            arrow.style.top = toY + 'px';
-            arrow.style.transform = `rotate(${angle - 90}deg)`;
-            
-            document.getElementById('board').appendChild(line);
-            document.getElementById('board').appendChild(arrow);
         }
         
         function clearSelection() {
@@ -658,7 +653,38 @@
                 const toElement = document.getElementById('point-' + to);
                 
                 if (fromElement && toElement) {
-                    drawArrow(fromElement, toElement);
+                    const fromRect = fromElement.getBoundingClientRect();
+                    const toRect = toElement.getBoundingClientRect();
+                    const boardRect = document.getElementById('board').getBoundingClientRect();
+                    
+                    const fromX = fromRect.left + fromRect.width/2 - boardRect.left;
+                    const fromY = fromRect.top + fromRect.height/2 - boardRect.top;
+                    const toX = toRect.left + toRect.width/2 - boardRect.left;
+                    const toY = toRect.top + toRect.height/2 - boardRect.top;
+                    
+                    // Calculate angle
+                    const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+                    
+                    // Calculate length
+                    const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
+                    
+                    // Create arrow line
+                    const line = document.createElement('div');
+                    line.className = 'arrow-line';
+                    line.style.left = fromX + 'px';
+                    line.style.top = fromY + 'px';
+                    line.style.width = length + 'px';
+                    line.style.transform = `rotate(${angle}deg)`;
+                    
+                    // Create arrow head
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.style.left = toX + 'px';
+                    arrow.style.top = toY + 'px';
+                    arrow.style.transform = `rotate(${angle - 90}deg)`;
+                    
+                    document.getElementById('board').appendChild(line);
+                    document.getElementById('board').appendChild(arrow);
                 }
             }
         }
