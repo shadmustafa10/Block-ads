@@ -3,893 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Backgammon Analyzer</title>
+    <title>Backgammon Board</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
             background-color: #f5f5f5;
         }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .board-container {
-            flex: 2;
-            min-width: 600px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .controls {
-            flex: 1;
-            min-width: 300px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
         .board {
-            width: 600px;
-            height: 400px;
+            width: 800px;
+            height: 500px;
             background-color: #e6c88c;
             position: relative;
-            margin: 0 auto;
-            overflow: hidden;
+            display: flex;
+        }
+        .quadrant {
+            width: 50%;
+            height: 100%;
+            position: relative;
         }
         .point {
             position: absolute;
             width: 40px;
-            height: 160px;
-            background-color: transparent;
-            z-index: 2;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .point.top {
+            top: 0;
+            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+        }
+        .point.bottom {
+            bottom: 0;
+            clip-path: polygon(0% 100%, 100% 100%, 50% 0%);
         }
         .checker {
-            position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            border: 1px solid #333;
+            margin: 2px 0;
             cursor: pointer;
-            transition: transform 0.2s;
-            z-index: 10;
+            border: 1px solid #333;
+            box-sizing: border-box;
         }
-        .checker.selected {
-            transform: scale(1.3);
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        .white {
+        .checker.white {
             background-color: white;
         }
-        .black {
+        .checker.black {
             background-color: black;
         }
-        .dice-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .dice {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            background-color: white;
-            border: 1px solid #333;
-            border-radius: 5px;
-            text-align: center;
-            line-height: 40px;
-            font-size: 20px;
-            margin: 5px;
-        }
-        .dice-input {
-            width: 40px;
-            height: 40px;
-            text-align: center;
-            font-size: 20px;
-            margin: 5px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .move-suggestion {
-            background-color: #e6f7ff;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border-left: 4px solid #1890ff;
-        }
-        .game-log {
-            height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-        }
-        .player-turn {
-            text-align: center;
-            font-weight: bold;
-            margin: 10px 0;
-            padding: 5px;
-            background-color: #e6f7ff;
-            border-radius: 5px;
+        .checker.selected {
+            transform: scale(1.2);
+            box-shadow: 0 0 8px rgba(0,0,0,0.6);
         }
         .bar {
             position: absolute;
-            left: 280px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 40px;
-            height: 400px;
+            height: 100%;
             background-color: #8b4513;
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .point-number {
             position: absolute;
             font-size: 12px;
             font-weight: bold;
             color: #333;
-            z-index: 5;
         }
-        .arrow {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 15px solid rgba(0,255,0,0.7);
-            transform-origin: 50% 100%;
-            z-index: 5;
+        .point-number.top {
+            bottom: -20px;
         }
-        .arrow-line {
-            position: absolute;
-            height: 2px;
-            background-color: rgba(0,255,0,0.7);
-            transform-origin: 0 50%;
-            z-index: 5;
-        }
-        .win-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0,0,0,0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 100;
-            display: none;
-        }
-        .point-area {
-            position: absolute;
-            width: 40px;
-            height: 160px;
-            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
-            z-index: 1;
-        }
-        .point-area.bottom {
-            clip-path: polygon(0% 100%, 100% 100%, 50% 0%);
+        .point-number.bottom {
+            top: -20px;
         }
     </style>
 </head>
 <body>
-    <h1>Backgammon Analyzer</h1>
-    
-    <div class="container">
-        <div class="board-container">
-            <h2>Current Board Position</h2>
-            <div class="board" id="board">
-                <div class="bar"></div>
-                <div class="win-message" id="win-message">
-                    <h2 id="win-text"></h2>
-                    <button id="new-game-end-btn">New Game</button>
-                </div>
-                <!-- Points and checkers will be generated by JavaScript -->
-            </div>
-            <div class="player-turn" id="player-turn">
-                White's turn - Roll the dice
-            </div>
-            <div class="dice-container">
-                <h3>Dice Roll: </h3>
-                <input type="number" min="1" max="6" class="dice-input" id="dice1-input">
-                <input type="number" min="1" max="6" class="dice-input" id="dice2-input">
-                <button id="submit-roll-btn">Submit Roll</button>
-                <button id="suggest-move-btn">Suggest Best Move</button>
-                <button id="play-computer-btn">Play Computer Move</button>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <h2>Move Analysis</h2>
-            
-            <div id="move-suggestions">
-                <p>Roll the dice to get move suggestions.</p>
-            </div>
-            
-            <div class="game-log" id="game-log">
-                <h3>Game Log</h3>
-                <p>Game started. White to play first.</p>
-            </div>
-            
-            <div class="controls">
-                <button id="new-game-btn">New Game</button>
-                <button id="undo-move-btn">Undo Last Move</button>
-            </div>
-        </div>
+    <div class="board" id="board">
+        <div class="quadrant" id="quadrant1"></div>
+        <div class="bar" id="bar"></div>
+        <div class="quadrant" id="quadrant2"></div>
     </div>
 
     <script>
-        // Game state
-        const gameState = {
-            currentPlayer: 'white',
-            dice: [0, 0],
-            moves: [],
-            position: initializeStartingPosition(),
-            selectedChecker: null,
-            remainingMoves: [],
-            gameEnded: false
-        };
-
-        // Initialize the board
-        document.addEventListener('DOMContentLoaded', function() {
-            const board = document.getElementById('board');
+        // Initialize the board with starting position
+        function initializeBoard() {
+            const quadrant1 = document.getElementById('quadrant1');
+            const quadrant2 = document.getElementById('quadrant2');
+            const bar = document.getElementById('bar');
             
-            // Create points (24 points in backgammon)
-            for (let i = 0; i < 24; i++) {
-                const pointNum = i + 1;
-                
-                // Create point area (visual triangle)
-                const pointArea = document.createElement('div');
-                pointArea.className = `point-area ${pointNum <= 12 ? '' : 'bottom'}`;
-                pointArea.style.backgroundColor = Math.floor(i / 6) % 2 === 0 ? '#8b4513' : '#f5deb3';
-                
-                // Position points (standard backgammon layout)
-                const isTop = pointNum <= 12;
-                const col = (pointNum <= 12) ? (12 - pointNum) : (pointNum - 13);
-                const left = 20 + col * 90;
-                const top = isTop ? 20 : 220;
-                
-                pointArea.style.left = left + 'px';
-                pointArea.style.top = top + 'px';
-                board.appendChild(pointArea);
-                
-                // Create point container (for checkers)
-                const point = document.createElement('div');
-                point.className = 'point';
-                point.id = 'point-' + pointNum;
-                point.dataset.pointNumber = pointNum;
-                point.style.left = left + 'px';
-                point.style.top = top + 'px';
-                
-                // Add point number
-                const number = document.createElement('div');
-                number.className = 'point-number';
-                number.textContent = pointNum;
-                number.style.left = (left + 10) + 'px';
-                number.style.top = isTop ? '180px' : '0px';
-                board.appendChild(number);
-                
-                // Add click handler for points
-                point.addEventListener('click', () => handlePointClick(pointNum));
-                
-                board.appendChild(point);
-            }
+            // Clear any existing points
+            quadrant1.innerHTML = '';
+            quadrant2.innerHTML = '';
+            bar.innerHTML = '';
             
-            // Create bar click area
-            const bar = document.querySelector('.bar');
-            bar.addEventListener('click', () => handlePointClick('bar'));
+            // Create points (24 points total)
+            const pointPositions = [
+                // Quadrant 1 (top right)
+                { number: 1, x: 0, color: '#8b4513', checkers: 2, checkerColor: 'black' },
+                { number: 2, x: 60, color: '#f5deb3', checkers: 0 },
+                { number: 3, x: 120, color: '#8b4513', checkers: 0 },
+                { number: 4, x: 180, color: '#f5deb3', checkers: 0 },
+                { number: 5, x: 240, color: '#8b4513', checkers: 0 },
+                { number: 6, x: 300, color: '#f5deb3', checkers: 5, checkerColor: 'white' },
+                { number: 7, x: 360, color: '#8b4513', checkers: 0 },
+                { number: 8, x: 420, color: '#f5deb3', checkers: 3, checkerColor: 'white' },
+                { number: 9, x: 480, color: '#8b4513', checkers: 0 },
+                { number: 10, x: 540, color: '#f5deb3', checkers: 0 },
+                { number: 11, x: 600, color: '#8b4513', checkers: 0 },
+                { number: 12, x: 660, color: '#f5deb3', checkers: 5, checkerColor: 'black' },
+                
+                // Quadrant 2 (top left)
+                { number: 13, x: 0, color: '#f5deb3', checkers: 5, checkerColor: 'white' },
+                { number: 14, x: 60, color: '#8b4513', checkers: 0 },
+                { number: 15, x: 120, color: '#f5deb3', checkers: 0 },
+                { number: 16, x: 180, color: '#8b4513', checkers: 0 },
+                { number: 17, x: 240, color: '#f5deb3', checkers: 3, checkerColor: 'black' },
+                { number: 18, x: 300, color: '#8b4513', checkers: 0 },
+                { number: 19, x: 360, color: '#f5deb3', checkers: 5, checkerColor: 'black' },
+                { number: 20, x: 420, color: '#8b4513', checkers: 0 },
+                { number: 21, x: 480, color: '#f5deb3', checkers: 0 },
+                { number: 22, x: 540, color: '#8b4513', checkers: 0 },
+                { number: 23, x: 600, color: '#f5deb3', checkers: 0 },
+                { number: 24, x: 660, color: '#8b4513', checkers: 2, checkerColor: 'white' }
+            ];
             
-            // Initialize starting position
-            updateBoard();
+            // Create points in quadrant 1 (top right)
+            pointPositions.slice(0, 12).forEach(point => {
+                createPoint(quadrant1, point, 'top');
+            });
             
-            // Set up event listeners
-            document.getElementById('submit-roll-btn').addEventListener('click', submitRoll);
-            document.getElementById('suggest-move-btn').addEventListener('click', suggestBestMove);
-            document.getElementById('play-computer-btn').addEventListener('click', playComputerMove);
-            document.getElementById('new-game-btn').addEventListener('click', newGame);
-            document.getElementById('new-game-end-btn').addEventListener('click', newGame);
-            document.getElementById('undo-move-btn').addEventListener('click', undoLastMove);
-        });
-        
-        function initializeStartingPosition() {
-            return {
-                1: {count: 2, color: 'black'},
-                6: {count: 5, color: 'white'},
-                8: {count: 3, color: 'white'},
-                12: {count: 5, color: 'black'},
-                13: {count: 5, color: 'white'},
-                17: {count: 3, color: 'black'},
-                19: {count: 5, color: 'black'},
-                24: {count: 2, color: 'white'},
-                bar: {white: 0, black: 0},
-                off: {white: 0, black: 0}
-            };
+            // Create points in quadrant 2 (top left)
+            pointPositions.slice(12).forEach(point => {
+                createPoint(quadrant2, point, 'bottom');
+            });
+            
+            // Create bar checkers (none at start)
+            const barWhite = document.createElement('div');
+            barWhite.className = 'checker white';
+            bar.appendChild(barWhite);
+            
+            const barBlack = document.createElement('div');
+            barBlack.className = 'checker black';
+            bar.appendChild(barBlack);
         }
         
-        function updateBoard() {
-            // Clear all checkers and arrows
-            const checkers = document.querySelectorAll('.checker');
-            checkers.forEach(c => c.remove());
+        function createPoint(container, point, position) {
+            const pointElement = document.createElement('div');
+            pointElement.className = `point ${position}`;
+            pointElement.style.left = `${point.x}px`;
+            pointElement.style.backgroundColor = point.color;
+            pointElement.dataset.pointNumber = point.number;
             
-            const arrows = document.querySelectorAll('.arrow, .arrow-line');
-            arrows.forEach(a => a.remove());
-            
-            // Update points
-            for (let i = 1; i <= 24; i++) {
-                const point = document.getElementById('point-' + i);
-                if (gameState.position[i]) {
-                    const {count, color} = gameState.position[i];
-                    const isTop = i <= 12;
-                    
-                    for (let j = 0; j < count; j++) {
-                        const checker = document.createElement('div');
-                        checker.className = 'checker ' + color;
-                        checker.dataset.point = i;
-                        checker.dataset.position = j;
-                        
-                        // Position checkers on the point
-                        const left = parseInt(point.style.left) + 10;
-                        const top = parseInt(point.style.top) + (isTop ? j * 15 : -j * 15);
-                        
-                        checker.style.left = left + 'px';
-                        checker.style.top = top + 'px';
-                        
-                        // Add click handler
-                        checker.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            handleCheckerClick(i, color);
-                        });
-                        
-                        point.appendChild(checker);
-                    }
+            // Add checkers
+            if (point.checkers > 0) {
+                for (let i = 0; i < point.checkers; i++) {
+                    const checker = document.createElement('div');
+                    checker.className = `checker ${point.checkerColor}`;
+                    checker.dataset.point = point.number;
+                    checker.dataset.position = i;
+                    checker.addEventListener('click', handleCheckerClick);
+                    pointElement.appendChild(checker);
                 }
             }
             
-            // Update bar
-            const bar = document.querySelector('.bar');
-            for (let i = 0; i < gameState.position.bar.white; i++) {
-                const checker = document.createElement('div');
-                checker.className = 'checker white';
-                checker.dataset.point = 'bar';
-                checker.dataset.position = i;
-                checker.style.left = '295px';
-                checker.style.top = (200 + i * 20) + 'px';
-                checker.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleCheckerClick('bar', 'white');
-                });
-                bar.appendChild(checker);
-            }
-            for (let i = 0; i < gameState.position.bar.black; i++) {
-                const checker = document.createElement('div');
-                checker.className = 'checker black';
-                checker.dataset.point = 'bar';
-                checker.dataset.position = i;
-                checker.style.left = '295px';
-                checker.style.top = (100 + i * 20) + 'px';
-                checker.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleCheckerClick('bar', 'black');
-                });
-                bar.appendChild(checker);
-            }
+            // Add point number
+            const numberElement = document.createElement('div');
+            numberElement.className = `point-number ${position}`;
+            numberElement.textContent = point.number;
+            pointElement.appendChild(numberElement);
             
-            // Update player turn display
-            document.getElementById('player-turn').textContent = 
-                `${gameState.currentPlayer === 'white' ? 'White' : 'Black'}'s turn - ${
-                    gameState.dice[0] ? 
-                    (gameState.remainingMoves.length > 0 ? 'Make move' : 'No moves left') : 
-                    'Roll the dice'}`;
-            
-            // Check for win
-            checkWinCondition();
+            container.appendChild(pointElement);
         }
         
-        function handleCheckerClick(point, color) {
-            if (gameState.gameEnded) return;
-            if (color !== gameState.currentPlayer) return;
-            if (gameState.dice[0] === 0) return;
+        function handleCheckerClick(event) {
+            // Clear previous selection
+            document.querySelectorAll('.checker.selected').forEach(checker => {
+                checker.classList.remove('selected');
+            });
             
-            // Deselect if clicking same checker
-            if (gameState.selectedChecker && gameState.selectedChecker.point === point) {
-                clearSelection();
-                return;
-            }
-            
-            // Select checker
-            clearSelection();
-            gameState.selectedChecker = { point, color };
-            
-            // Highlight selected checker
-            const checkers = document.querySelectorAll(`.checker[data-point="${point}"]`);
-            checkers.forEach(c => c.classList.add('selected'));
-            
-            // Show possible moves
-            showPossibleMoves(point, color);
+            // Select this checker
+            event.target.classList.add('selected');
+            console.log(`Selected checker at point ${event.target.dataset.point}, position ${event.target.dataset.position}`);
         }
         
-        function handlePointClick(point) {
-            if (gameState.gameEnded) return;
-            if (!gameState.selectedChecker) return;
-            
-            const fromPoint = gameState.selectedChecker.point;
-            const color = gameState.selectedChecker.color;
-            
-            // Calculate move distance
-            let distance;
-            if (fromPoint === 'bar') {
-                distance = color === 'white' ? 25 - point : point;
-            } else if (point === 'off') {
-                if (color === 'white') {
-                    distance = fromPoint;
-                } else {
-                    distance = 25 - fromPoint;
-                }
-            } else {
-                distance = Math.abs(point - fromPoint);
-            }
-            
-            // Check if move is valid
-            const moveIndex = gameState.remainingMoves.indexOf(distance);
-            if (moveIndex === -1) {
-                // Check if we can combine moves
-                if (gameState.remainingMoves.length >= 2) {
-                    const sum = gameState.remainingMoves[0] + gameState.remainingMoves[1];
-                    if (distance === sum) {
-                        // Use both moves
-                        makeMove(fromPoint, point, gameState.remainingMoves[0], gameState.remainingMoves[1]);
-                        return;
-                    }
-                }
-                alert('Invalid move');
-                return;
-            }
-            
-            makeMove(fromPoint, point, distance);
-        }
-        
-        function makeMove(fromPoint, toPoint, move1, move2 = null) {
-            const color = gameState.currentPlayer;
-            
-            // Remove checker from source
-            if (fromPoint === 'bar') {
-                gameState.position.bar[color]--;
-            } else {
-                gameState.position[fromPoint].count--;
-                if (gameState.position[fromPoint].count === 0) {
-                    delete gameState.position[fromPoint];
-                }
-            }
-            
-            // Add checker to destination
-            if (toPoint === 'off') {
-                gameState.position.off[color]++;
-            } else {
-                // Check if hitting opponent
-                if (gameState.position[toPoint] && gameState.position[toPoint].color !== color && 
-                    gameState.position[toPoint].count === 1) {
-                    // Hit opponent
-                    const opponentColor = color === 'white' ? 'black' : 'white';
-                    gameState.position.bar[opponentColor]++;
-                    delete gameState.position[toPoint];
-                }
-                
-                if (!gameState.position[toPoint]) {
-                    gameState.position[toPoint] = { count: 0, color };
-                }
-                gameState.position[toPoint].count++;
-            }
-            
-            // Update remaining moves
-            if (move2 !== null) {
-                // Combined move
-                gameState.remainingMoves = gameState.remainingMoves.filter(m => m !== move1 && m !== move2);
-            } else {
-                gameState.remainingMoves = gameState.remainingMoves.filter(m => m !== move1);
-            }
-            
-            // Log move
-            const moveNotation = fromPoint === 'bar' ? 
-                `bar/${toPoint}` : 
-                `${fromPoint}/${toPoint}`;
-            logToGame(`${color === 'white' ? 'White' : 'Black'} moved ${moveNotation}`);
-            
-            // Check if turn is over
-            if (gameState.remainingMoves.length === 0) {
-                gameState.currentPlayer = color === 'white' ? 'black' : 'white';
-                gameState.dice = [0, 0];
-                logToGame(`${gameState.currentPlayer === 'white' ? 'White' : 'Black'}'s turn`);
-            }
-            
-            clearSelection();
-            updateBoard();
-        }
-        
-        function showPossibleMoves(fromPoint, color) {
-            if (gameState.remainingMoves.length === 0) return;
-            
-            const fromElement = fromPoint === 'bar' ? 
-                document.querySelector('.bar') : 
-                document.getElementById('point-' + fromPoint);
-            const fromRect = fromElement.getBoundingClientRect();
-            const boardRect = document.getElementById('board').getBoundingClientRect();
-            const fromX = fromRect.left + fromRect.width/2 - boardRect.left;
-            const fromY = fromRect.top + fromRect.height/2 - boardRect.top;
-            
-            for (const move of gameState.remainingMoves) {
-                let toPoint;
-                if (fromPoint === 'bar') {
-                    toPoint = color === 'white' ? (25 - move) : move;
-                } else {
-                    toPoint = color === 'white' ? (fromPoint - move) : (fromPoint + move);
-                }
-                
-                // Check if move is valid
-                if (toPoint <= 0) toPoint = 'off';
-                if (toPoint >= 25) toPoint = 'off';
-                
-                if (toPoint !== 'off') {
-                    // Check if point is blocked by opponent
-                    if (gameState.position[toPoint] && gameState.position[toPoint].color !== color && 
-                        gameState.position[toPoint].count > 1) {
-                        continue;
-                    }
-                }
-                
-                const toElement = toPoint === 'bar' ? 
-                    document.querySelector('.bar') : 
-                    (toPoint === 'off' ? null : document.getElementById('point-' + toPoint));
-                
-                if (toElement) {
-                    const toRect = toElement.getBoundingClientRect();
-                    const toX = toRect.left + toRect.width/2 - boardRect.left;
-                    const toY = toRect.top + toRect.height/2 - boardRect.top;
-                    
-                    // Calculate angle
-                    const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
-                    
-                    // Calculate length
-                    const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
-                    
-                    // Create arrow line
-                    const line = document.createElement('div');
-                    line.className = 'arrow-line';
-                    line.style.left = fromX + 'px';
-                    line.style.top = fromY + 'px';
-                    line.style.width = length + 'px';
-                    line.style.transform = `rotate(${angle}deg)`;
-                    
-                    // Create arrow head
-                    const arrow = document.createElement('div');
-                    arrow.className = 'arrow';
-                    arrow.style.left = toX + 'px';
-                    arrow.style.top = toY + 'px';
-                    arrow.style.transform = `rotate(${angle - 90}deg)`;
-                    
-                    document.getElementById('board').appendChild(line);
-                    document.getElementById('board').appendChild(arrow);
-                }
-            }
-        }
-        
-        function clearSelection() {
-            if (gameState.selectedChecker) {
-                const checkers = document.querySelectorAll('.checker.selected');
-                checkers.forEach(c => c.classList.remove('selected'));
-                gameState.selectedChecker = null;
-                
-                // Clear arrows
-                const arrows = document.querySelectorAll('.arrow, .arrow-line');
-                arrows.forEach(a => a.remove());
-            }
-        }
-        
-        function submitRoll() {
-            if (gameState.gameEnded) return;
-            if (gameState.dice[0] !== 0) {
-                alert('You already rolled the dice');
-                return;
-            }
-            
-            const die1 = parseInt(document.getElementById('dice1-input').value);
-            const die2 = parseInt(document.getElementById('dice2-input').value);
-            
-            if (isNaN(die1) || isNaN(die2) || die1 < 1 || die1 > 6 || die2 < 1 || die2 > 6) {
-                alert('Please enter valid dice values (1-6)');
-                return;
-            }
-            
-            gameState.dice = [die1, die2];
-            gameState.remainingMoves = die1 === die2 ? 
-                [die1, die1, die1, die1] : // Doubles
-                [die1, die2];
-            
-            logToGame(`${gameState.currentPlayer === 'white' ? 'White' : 'Black'} rolled ${die1}-${die2}`);
-            updateBoard();
-        }
-        
-        function suggestBestMove() {
-            if (gameState.gameEnded) return;
-            if (gameState.dice[0] === 0) {
-                alert('Please roll the dice first');
-                return;
-            }
-            
-            const [die1, die2] = gameState.dice;
-            const player = gameState.currentPlayer;
-            
-            // Get sample moves based on dice and player
-            const bestMove = getBestMoveSample(die1, die2, player);
-            const altMove = getAlternativeMoveSample(die1, die2, player);
-            
-            const suggestions = document.getElementById('move-suggestions');
-            suggestions.innerHTML = `
-                <h3>Suggested Moves for ${die1}-${die2}</h3>
-                <div class="move-suggestion">
-                    <strong>1. ${bestMove}</strong> (Best equity)
-                    <p>${getMoveExplanation(bestMove, player)}</p>
-                </div>
-                <div class="move-suggestion">
-                    <strong>2. ${altMove}</strong> (Alternative)
-                    <p>${getMoveExplanation(altMove, player)}</p>
-                </div>
-            `;
-            
-            // Visualize the best move
-            visualizeMove(bestMove, player);
-        }
-        
-        function visualizeMove(moveNotation, player) {
-            // Clear any existing arrows
-            const arrows = document.querySelectorAll('.arrow, .arrow-line');
-            arrows.forEach(a => a.remove());
-            
-            // Parse move notation (e.g. "8/3 6/5")
-            const moves = moveNotation.split(' ');
-            for (const move of moves) {
-                const [from, to] = move.split('/').map(Number);
-                
-                const fromElement = document.getElementById('point-' + from);
-                const toElement = document.getElementById('point-' + to);
-                
-                if (fromElement && toElement) {
-                    const fromRect = fromElement.getBoundingClientRect();
-                    const toRect = toElement.getBoundingClientRect();
-                    const boardRect = document.getElementById('board').getBoundingClientRect();
-                    
-                    const fromX = fromRect.left + fromRect.width/2 - boardRect.left;
-                    const fromY = fromRect.top + fromRect.height/2 - boardRect.top;
-                    const toX = toRect.left + toRect.width/2 - boardRect.left;
-                    const toY = toRect.top + toRect.height/2 - boardRect.top;
-                    
-                    // Calculate angle
-                    const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
-                    
-                    // Calculate length
-                    const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
-                    
-                    // Create arrow line
-                    const line = document.createElement('div');
-                    line.className = 'arrow-line';
-                    line.style.left = fromX + 'px';
-                    line.style.top = fromY + 'px';
-                    line.style.width = length + 'px';
-                    line.style.transform = `rotate(${angle}deg)`;
-                    
-                    // Create arrow head
-                    const arrow = document.createElement('div');
-                    arrow.className = 'arrow';
-                    arrow.style.left = toX + 'px';
-                    arrow.style.top = toY + 'px';
-                    arrow.style.transform = `rotate(${angle - 90}deg)`;
-                    
-                    document.getElementById('board').appendChild(line);
-                    document.getElementById('board').appendChild(arrow);
-                }
-            }
-        }
-        
-        function playComputerMove() {
-            if (gameState.gameEnded) return;
-            if (gameState.dice[0] === 0) {
-                alert('Please roll the dice first');
-                return;
-            }
-            
-            const [die1, die2] = gameState.dice;
-            const player = gameState.currentPlayer;
-            const bestMove = getBestMoveSample(die1, die2, player);
-            
-            // Parse and execute the move
-            const moves = bestMove.split(' ');
-            for (const move of moves) {
-                const [from, to] = move.split('/').map(Number);
-                makeMove(from, to, Math.abs(to - from));
-            }
-        }
-        
-        function getBestMoveSample(die1, die2, player) {
-            // This is simplified logic - a real AI would be more sophisticated
-            const isWhite = player === 'white';
-            
-            // Check if any checkers on bar
-            if (gameState.position.bar[player] > 0) {
-                const enterPoint = isWhite ? (25 - die1) : die1;
-                if (gameState.position[enterPoint] && gameState.position[enterPoint].color !== player && 
-                    gameState.position[enterPoint].count > 1) {
-                    // Can't enter, try other die
-                    const enterPoint2 = isWhite ? (25 - die2) : die2;
-                    return `bar/${enterPoint2}`;
-                }
-                return `bar/${enterPoint}`;
-            }
-            
-            // Check if bearing off is possible
-            if (canBearOff(player)) {
-                const bearOffMoves = getBearOffMoves(die1, die2, player);
-                if (bearOffMoves) return bearOffMoves;
-            }
-            
-            // Standard moves
-            if (die1 === 6 && die2 === 6) {
-                return isWhite ? "24/18 24/18" : "1/7 1/7";
-            }
-            if (die1 === 5 && die2 === 5) {
-                return isWhite ? "13/8 13/8" : "12/17 12/17";
-            }
-            if (die1 === 4 && die2 === 4) {
-                return isWhite ? "8/4 8/4" : "17/21 17/21";
-            }
-            
-            // Default strategy
-            if (isWhite) {
-                return `13/${13-die1} 6/${6-die2}`;
-            } else {
-                return `12/${12+die1} 19/${19+die2}`;
-            }
-        }
-        
-        function canBearOff(player) {
-            if (player === 'white') {
-                for (let i = 7; i <= 24; i++) {
-                    if (gameState.position[i] && gameState.position[i].color === 'white') {
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                for (let i = 1; i <= 18; i++) {
-                    if (gameState.position[i] && gameState.position[i].color === 'black') {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        
-        function getBearOffMoves(die1, die2, player) {
-            if (player === 'white') {
-                if (gameState.position[die1] && gameState.position[die1].color === 'white') {
-                    return `${die1}/off ${die2 === die1 ? '' : gameState.position[die2] ? `${die2}/off` : ''}`.trim();
-                }
-            } else {
-                const blackDie1 = 25 - die1;
-                const blackDie2 = 25 - die2;
-                if (gameState.position[blackDie1] && gameState.position[blackDie1].color === 'black') {
-                    return `${blackDie1}/off ${die2 === die1 ? '' : gameState.position[blackDie2] ? `${blackDie2}/off` : ''}`.trim();
-                }
-            }
-            return null;
-        }
-        
-        function getAlternativeMoveSample(die1, die2, player) {
-            const isWhite = player === 'white';
-            
-            if (die1 === 6 && die2 === 6) {
-                return isWhite ? "24/18 13/7" : "1/7 6/12";
-            }
-            if (die1 === 5 && die2 === 5) {
-                return isWhite ? "13/8 6/1" : "12/17 19/24";
-            }
-            
-            if (isWhite) {
-                return `8/${8-die1} 13/${13-die2}`;
-            } else {
-                return `6/${6+die1} 13/${13+die2}`;
-            }
-        }
-        
-        function getMoveExplanation(move, player) {
-            if (move.includes("24/") || move.includes("1/")) {
-                return "Brings your back checkers into play, which is important for development.";
-            }
-            if (move.includes("bar/")) {
-                return "Re-enters a hit checker from the bar.";
-            }
-            if (move.includes("/off")) {
-                return "Bears off checkers to win the game.";
-            }
-            if (move.includes("13/") || move.includes("12/") || move.includes("8/") || move.includes("6/")) {
-                return "Develops your position by moving builders toward your home board.";
-            }
-            return "Good standard move that balances development and safety.";
-        }
-        
-        function checkWinCondition() {
-            if (gameState.position.off.white === 15) {
-                endGame('white');
-            } else if (gameState.position.off.black === 15) {
-                endGame('black');
-            }
-        }
-        
-        function endGame(winner) {
-            gameState.gameEnded = true;
-            document.getElementById('win-text').textContent = `${winner === 'white' ? 'White' : 'Black'} wins the game!`;
-            document.getElementById('win-message').style.display = 'block';
-            logToGame(`${winner === 'white' ? 'White' : 'Black'} wins the game!`);
-        }
-        
-        function logToGame(message) {
-            const log = document.getElementById('game-log');
-            log.innerHTML += `<p>${message}</p>`;
-            log.scrollTop = log.scrollHeight;
-        }
-        
-        function newGame() {
-            gameState.currentPlayer = 'white';
-            gameState.dice = [0, 0];
-            gameState.moves = [];
-            gameState.position = initializeStartingPosition();
-            gameState.selectedChecker = null;
-            gameState.remainingMoves = [];
-            gameState.gameEnded = false;
-            
-            document.getElementById('dice1-input').value = '';
-            document.getElementById('dice2-input').value = '';
-            document.getElementById('move-suggestions').innerHTML = '<p>Roll the dice to get move suggestions.</p>';
-            document.getElementById('game-log').innerHTML = '<h3>Game Log</h3><p>New game started. White to play first.</p>';
-            document.getElementById('win-message').style.display = 'none';
-            
-            updateBoard();
-        }
-        
-        function undoLastMove() {
-            if (gameState.gameEnded) {
-                newGame();
-                return;
-            }
-            
-            // In a real implementation, this would properly undo moves
-            // For this demo, we'll just reset to start of current turn
-            gameState.dice = [0, 0];
-            gameState.remainingMoves = [];
-            gameState.selectedChecker = null;
-            
-            // Remove last move from log
-            const log = document.getElementById('game-log');
-            const entries = log.querySelectorAll('p');
-            if (entries.length > 1) {
-                entries[entries.length - 1].remove();
-            }
-            
-            updateBoard();
-        }
+        // Initialize the board when page loads
+        window.onload = initializeBoard;
     </script>
 </body>
 </html>
